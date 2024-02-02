@@ -9,8 +9,9 @@ import (
 )
 
 type Service struct {
-	pageViewsCollection *mongo.Collection
-	sessionsCollection  *mongo.Collection
+	pageViewsCollection    *mongo.Collection
+	sessionsCollection     *mongo.Collection
+	customEventsCollection *mongo.Collection
 	context.Context
 	start time.Time
 	end   time.Time
@@ -18,11 +19,12 @@ type Service struct {
 
 func NewService(start int64, end int64) *Service {
 	return &Service{
-		Context:             context.Background(),
-		start:               time.Unix(start, 0),
-		end:                 time.Unix(end, 0),
-		pageViewsCollection: db.MongoDb.Collection("page_views"),
-		sessionsCollection:  db.MongoDb.Collection("sessions"),
+		Context:                context.Background(),
+		start:                  time.Unix(start, 0),
+		end:                    time.Unix(end, 0),
+		pageViewsCollection:    db.MongoDb.Collection("page_views"),
+		sessionsCollection:     db.MongoDb.Collection("sessions"),
+		customEventsCollection: db.MongoDb.Collection("custom_events"),
 	}
 }
 
@@ -83,6 +85,12 @@ func (s Service) getWebsiteAnalytics(website authent.Website) (AnalyticsData, []
 		errors = append(errors, errPageViews)
 	} else {
 		websiteAnalytics.PagesViews = pageViews
+	}
+
+	if customEvents, errCustomEvents := s.getCustomEvents(website); errCustomEvents != nil {
+		errors = append(errors, errCustomEvents)
+	} else {
+		websiteAnalytics.CustomEvents = customEvents
 	}
 
 	return websiteAnalytics, errors

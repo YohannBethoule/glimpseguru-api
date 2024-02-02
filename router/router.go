@@ -61,12 +61,14 @@ func identityValidationMiddleware() gin.HandlerFunc {
 
 		if apiKey == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "API Key is required in headers"})
+			c.Abort()
 			return
 		}
 
 		user, errAuthent := authent.GetUser(apiKey)
 		if errAuthent != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+			c.Abort()
 			return
 		}
 

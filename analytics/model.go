@@ -10,6 +10,7 @@ type AnalyticsData struct {
 	DeviceType   map[string]float64 `json:"deviceType"`
 	SourceType   map[string]float64 `json:"sourceType"`
 	PagesViews   map[string]int     `json:"pagesViews"`
+	CustomEvents map[string]int     `json:"customEvents"`
 }
 
 type SessionTime struct {

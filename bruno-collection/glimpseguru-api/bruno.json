@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "glimpseguru-api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

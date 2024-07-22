@@ -4,6 +4,7 @@ import (
 	"glimpseguru-api/authent"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 func (s Service) getPageViewMatchFilter(website authent.Website) bson.D {
@@ -144,4 +145,57 @@ func (s Service) getPageViews(website authent.Website) (map[string]int, error) {
 	}
 
 	return pageViews, nil
+}
+
+func (s Service) getViewsHistogram(website authent.Website) (map[string]int, error) {
+	viewsHistogram := make(map[string]int)
+	timeFormat := "2006-01-02"
+	mongoTimeFormat := "%Y-%m-%d"
+	timeIncrement := 24 * time.Hour
+
+	if s.end.Sub(s.start) < 48*time.Hour {
+		timeFormat = "2006-01-02 15:00"
+		mongoTimeFormat = "%Y-%m-%d %H:00"
+		timeIncrement = time.Hour
+	}
+
+	// Generate all time slots from start to end
+	for t := s.start; !t.After(s.end); t = t.Add(timeIncrement) {
+		viewsHistogram[t.Format(timeFormat)] = 0
+	}
+
+	matchStage := bson.D{{"$match", s.getPageViewMatchFilter(website)}}
+
+	// Group by date or hour and count occurrences
+	groupStage := bson.D{
+		{"$group", bson.D{
+			{"_id", bson.D{
+				{"$dateToString", bson.D{
+					{"format", mongoTimeFormat},
+					{"date", "$timestamp"},
+				}},
+			}},
+			{"count", bson.D{{"$sum", 1}}},
+		}},
+	}
+
+	// Perform the aggregation
+	cursor, err := s.pageViewsCollection.Aggregate(s.Context, mongo.Pipeline{matchStage, groupStage})
+	if err != nil {
+		return nil, err
+	}
+
+	// Iterate over the cursor and populate the result map
+	for cursor.Next(s.Context) {
+		var result struct {
+			ID    string `bson:"_id"`
+			Count int    `bson:"count"`
+		}
+		if err := cursor.Decode(&result); err != nil {
+			continue
+		}
+		viewsHistogram[result.ID] = result.Count
+	}
+
+	return viewsHistogram, nil
 }

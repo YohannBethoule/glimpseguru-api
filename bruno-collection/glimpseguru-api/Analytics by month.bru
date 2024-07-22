@@ -1,0 +1,20 @@
+meta {
+  name: Analytics by month 
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/userAnalytics?start_time=1704063600&end_time=1706741999
+  body: formUrlEncoded
+  auth: none
+}
+
+params:query {
+  start_time: 1704063600
+  end_time: 1706741999
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}

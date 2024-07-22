@@ -1,0 +1,20 @@
+meta {
+  name: Analytics by day
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseURL}}/userAnalytics?start_time=1705964400&end_time=1706137199
+  body: formUrlEncoded
+  auth: none
+}
+
+params:query {
+  start_time: 1705964400
+  end_time: 1706137199
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}

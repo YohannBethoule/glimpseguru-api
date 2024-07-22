@@ -93,5 +93,11 @@ func (s Service) getWebsiteAnalytics(website authent.Website) (AnalyticsData, []
 		websiteAnalytics.CustomEvents = customEvents
 	}
 
+	if viewsHistogram, errViewsHistogram := s.getViewsHistogram(website); errViewsHistogram != nil {
+		errors = append(errors, errViewsHistogram)
+	} else {
+		websiteAnalytics.ViewsHistogram = viewsHistogram
+	}
+
 	return websiteAnalytics, errors
 }
